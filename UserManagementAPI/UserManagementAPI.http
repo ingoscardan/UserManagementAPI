@@ -1,6 +1,7 @@
 @UserManagementAPI_HostAddress = http://localhost:5054
 
-GET {{UserManagementAPI_HostAddress}}/weatherforecast/
+GET {{UserManagementAPI_HostAddress}}/users
 Accept: application/json
+Authorization: Bearer mock_valid_token_1
 
 ###
