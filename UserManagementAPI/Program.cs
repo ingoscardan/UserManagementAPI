@@ -23,6 +23,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Custom Mock Authentication Middleware
+app.Use(async (context, next) =>
+{
+    // 1. Check for a token in the Authorization header (bearer token format)
+    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+    if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+    {
+        await ReturnUnauthorized(context, "Missing or invalid authorization header.");
+        return;
+    }
+
+    // 2. Extract the token 
+    var token = authHeader.Substring("Bearer ".Length).Trim();
+
+    // 3. Validate the token (mock validation - replace with your actual logic)
+    if (!IsValidMockToken(token)) // Call mock validation function
+    {
+        await ReturnUnauthorized(context, "Invalid token.");
+        return;
+    }
+
+
+    // 4. If the token is valid, continue to the next middleware
+    await next();
+});
+
+
 app.UseExceptionHandler(exceptionHandlerApp =>
 {
     exceptionHandlerApp.Run(async context =>
@@ -136,3 +163,25 @@ app.MapDelete("/users/{id}", (int id) =>
 
 
 app.Run();
+
+async Task ReturnUnauthorized(HttpContext context, string message)
+{
+    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+    context.Response.ContentType = "application/json";
+    var result = JsonSerializer.Serialize(new { message = message });
+    await context.Response.WriteAsync(result);
+}
+
+// Mock token validation function (replace with your actual validation logic)
+bool IsValidMockToken(string token)
+{
+    // In a real application, you would validate against your user database or token store.
+    // This is a simple example that checks against a hardcoded list of valid tokens.
+
+    var validTokens = new List<string> 
+    { 
+        "mock_valid_token_1",  // Example valid tokens (replace with dynamically generated tokens)
+        "mock_valid_token_2" 
+    };
+    return validTokens.Contains(token);
+}
