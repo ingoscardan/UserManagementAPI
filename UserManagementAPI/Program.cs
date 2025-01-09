@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IServiceValidator, ServiceValidator>();
 
 var app = builder.Build();
 
@@ -22,8 +23,13 @@ app.UseHttpsRedirection();
 List<User> users = new List<User>();
 
 // Create (POST)
-app.MapPost("/users", (User user) =>
+app.MapPost("/users", (User user, IServiceValidator validator) =>
 {
+    if (!validator.TryValidate(user, out var errors))
+    {
+        return Results.BadRequest(errors);
+    }
+    
     user.Id = users.Count + 1; // Simple ID generation (not production-ready)
     users.Add(user);
     return Results.Created($"/users/{user.Id}", user);
@@ -41,8 +47,12 @@ app.MapGet("/users", () => Results.Ok(users));
 
 
 // Update (PUT)
-app.MapPut("/users/{id}", (int id, User updatedUser) =>
+app.MapPut("/users/{id}", (int id, User updatedUser , IServiceValidator validator) =>
 {
+    if (!validator.TryValidate(updatedUser, out var errors))
+    {
+        return Results.BadRequest(errors);
+    }
     var user = users.Find(u => u.Id == id);
     if (user is null) return Results.NotFound();
     // Update user properties (e.g., user.FirstName = updatedUser.FirstName)
@@ -58,28 +68,5 @@ app.MapDelete("/users/{id}", (int id) =>
     return Results.NoContent();
 });
 
-// Helper function for validation
-static bool TryValidate<T>(T obj, out IDictionary<string, string[]> errors)
-{
-    var validationResults = new List<ValidationResult>();
-    if (obj != null)
-    {
-        var context = new ValidationContext(obj);
-        var isValid = Validator.TryValidateObject(obj, context, validationResults, true);
-
-        errors = validationResults.GroupBy(
-            vr => vr.MemberNames.FirstOrDefault() ?? string.Empty,
-            vr => vr.ErrorMessage
-        ).ToDictionary(
-            g => g.Key,
-            g => g.ToArray()
-        )!;
-
-        return isValid;
-    }
-
-    errors = null!;
-    return false;
-}
 
 app.Run();
