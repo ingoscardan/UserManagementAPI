@@ -180,8 +180,7 @@ bool IsValidMockToken(string token)
 
     var validTokens = new List<string> 
     { 
-        "mock_valid_token_1",  // Example valid tokens (replace with dynamically generated tokens)
-        "mock_valid_token_2" 
+        "valid_token", 
     };
     return validTokens.Contains(token);
 }

@@ -1,7 +1,88 @@
 @UserManagementAPI_HostAddress = http://localhost:5054
 
+### GET: users
 GET {{UserManagementAPI_HostAddress}}/users
 Accept: application/json
-Authorization: Bearer mock_valid_token_1
+Authorization: Bearer valid_token
 
-###
+### GET: users/1
+# Expected result: Returns the user with ID 1 with status 200 OK if exists
+GET {{UserManagementAPI_HostAddress}}/users/1
+Accept: application/json
+Authorization: Bearer valid_token
+
+### POST: users
+# Expected result: Creates a new user and returns status 201 Created
+POST {{UserManagementAPI_HostAddress}}/users
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer valid_token
+
+{
+  "firstName": "Murcy",
+  "lastName": "Otero"
+}
+
+### POST: users (invalid data)
+# Expected result: Returns status 400 Bad Request because the request body is invalid (missing required fields)
+POST {{UserManagementAPI_HostAddress}}/users
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer valid_token
+
+{
+  "firstName": "",
+  "lastName": ""
+}
+
+### PUT: users/1
+# Expected result: Updates the user with ID 1 and returns status 204 No Content
+PUT {{UserManagementAPI_HostAddress}}/users/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer valid_token
+
+{
+  "id": 1,
+  "firstName": "Murcy",
+  "lastName": "Otra Murcy"
+}
+
+
+### PUT: users/999
+# Expected result: Returns status 404 Not Found because the user with ID 999 does not exist
+PUT {{UserManagementAPI_HostAddress}}/users/999
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer valid_token
+
+{
+  "id": 999,
+  "firstName": "Nonexistent",
+  "lastName": "User"
+}
+
+### PUT: users/1 (invalid data)
+# Expected result: Returns status 400 Bad Request because the request body is invalid (missing required fields)
+PUT {{UserManagementAPI_HostAddress}}/users/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer valid_token
+
+{
+  "id": 1,
+  "firstName": "",
+  "lastName": ""
+}
+
+### DELETE: users/1
+# Expected result: Deletes the user with ID 1 and returns status 204 No Content
+DELETE {{UserManagementAPI_HostAddress}}/users/1
+Accept: application/json
+Authorization: Bearer valid_token
+
+### DELETE: users/999
+# Expected result: Returns status 404 Not Found because the user with ID 999 does not exist
+DELETE {{UserManagementAPI_HostAddress}}/users/999
+Accept: application/json
+Authorization: Bearer valid_token
